@@ -1,0 +1,21 @@
+{
+  "main": "src\\croneoscore.cpp",
+  "contract": "croneoscore",
+  "include": "",
+  "resource": "",
+  "cdt": "v1.6.2",
+  "output": "",
+  "scripts": {
+    "build": ""
+  },
+  "deploy": {
+    "target": "abi",
+    "mainnet": "",
+    "kylin": "",
+    "jungle": "piecestest12",
+    "local": ""
+  },
+  "test": {
+    "npmClient": ""
+  }
+}
