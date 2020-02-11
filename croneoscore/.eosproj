@@ -9,7 +9,7 @@
     "build": ""
   },
   "deploy": {
-    "target": "abi",
+    "target": "both",
     "mainnet": "",
     "kylin": "",
     "jungle": "piecestest12",

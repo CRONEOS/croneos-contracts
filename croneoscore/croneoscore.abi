@@ -91,6 +91,10 @@
                     "type": "name"
                 },
                 {
+                    "name": "auth_guard",
+                    "type": "name"
+                },
+                {
                     "name": "actions",
                     "type": "action[]"
                 },
@@ -113,6 +117,10 @@
                 {
                     "name": "description",
                     "type": "string"
+                },
+                {
+                    "name": "type",
+                    "type": "uint8"
                 }
             ]
         },
@@ -156,6 +164,24 @@
             ]
         },
         {
+            "name": "execoracle",
+            "base": "",
+            "fields": [
+                {
+                    "name": "executer",
+                    "type": "name"
+                },
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "oracle_response",
+                    "type": "bytes"
+                }
+            ]
+        },
+        {
             "name": "gastokens",
             "base": "",
             "fields": [
@@ -176,6 +202,24 @@
                 {
                     "name": "permission",
                     "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "privscopes",
+            "base": "",
+            "fields": [
+                {
+                    "name": "scope",
+                    "type": "name"
+                },
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "meta",
+                    "type": "scope_meta"
                 }
             ]
         },
@@ -232,7 +276,15 @@
                     "type": "name"
                 },
                 {
+                    "name": "scope",
+                    "type": "name"
+                },
+                {
                     "name": "tag",
+                    "type": "name"
+                },
+                {
+                    "name": "auth_guard",
                     "type": "name"
                 },
                 {
@@ -266,6 +318,92 @@
             ]
         },
         {
+            "name": "scope_meta",
+            "base": "",
+            "fields": [
+                {
+                    "name": "about",
+                    "type": "string"
+                },
+                {
+                    "name": "logo",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "scopeusers",
+            "base": "",
+            "fields": [
+                {
+                    "name": "user",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "setprivscope",
+            "base": "",
+            "fields": [
+                {
+                    "name": "actor",
+                    "type": "name"
+                },
+                {
+                    "name": "scope_owner",
+                    "type": "name"
+                },
+                {
+                    "name": "scope",
+                    "type": "name"
+                },
+                {
+                    "name": "remove",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "setscopemeta",
+            "base": "",
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "scope",
+                    "type": "name"
+                },
+                {
+                    "name": "meta",
+                    "type": "scope_meta"
+                }
+            ]
+        },
+        {
+            "name": "setscopeuser",
+            "base": "",
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "scope",
+                    "type": "name"
+                },
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "remove",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
             "name": "setsettings",
             "base": "",
             "fields": [
@@ -280,6 +418,10 @@
                 {
                     "name": "reward_fee_perc",
                     "type": "uint8"
+                },
+                {
+                    "name": "new_scope_fee",
+                    "type": "asset"
                 },
                 {
                     "name": "token_contract",
@@ -302,6 +444,10 @@
                 {
                     "name": "reward_fee_perc",
                     "type": "uint8"
+                },
+                {
+                    "name": "new_scope_fee",
+                    "type": "asset"
                 },
                 {
                     "name": "token_contract",
@@ -361,6 +507,11 @@
             "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: Execute\nsummary: 'Execute scheduled job.'\nicon: https://croneos.io/statics/app-logo-128x128.png#d39fc7767099890429d926339b4d13af66b77db9b443366002227bad9bb1896e\n---\n{{executer}} agrees to execute cronjob with id {{id}} and acknowledge that CPU will be used."
         },
         {
+            "name": "execoracle",
+            "type": "execoracle",
+            "ricardian_contract": ""
+        },
+        {
             "name": "refund",
             "type": "refund",
             "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: Refund Deposit\nsummary: 'Refund deposit.'\nicon: https://croneos.io/statics/app-logo-128x128.png#d39fc7767099890429d926339b4d13af66b77db9b443366002227bad9bb1896e\n---\n{{owner}} agrees to receive a refund of {{amount}} via an inline transfer initiated by the contract. The {{asset_to_symbol_code amount}} will be substracted from {{owner}}'s deposit."
@@ -379,6 +530,21 @@
             "name": "schedule",
             "type": "schedule",
             "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: Schedule Job\nsummary: 'Schedule a new cronjob.'\nicon: https://croneos.io/statics/app-logo-128x128.png#d39fc7767099890429d926339b4d13af66b77db9b443366002227bad9bb1896e\n---\n{{owner}} agrees to schedule a new cronjob and acknowledge that this action will temporary consume RAM until the job is executed or cancelled."
+        },
+        {
+            "name": "setprivscope",
+            "type": "setprivscope",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "setscopemeta",
+            "type": "setscopemeta",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "setscopeuser",
+            "type": "setscopeuser",
+            "ricardian_contract": ""
         },
         {
             "name": "setsettings",
@@ -421,8 +587,22 @@
             "key_types": []
         },
         {
+            "name": "privscopes",
+            "type": "privscopes",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
             "name": "rewards",
             "type": "rewards",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "scopeusers",
+            "type": "scopeusers",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

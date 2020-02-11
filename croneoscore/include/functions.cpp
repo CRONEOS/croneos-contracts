@@ -15,6 +15,7 @@ void croneoscore::assert_invalid_authorization(vector<permission_level> auths, c
             has_required_auth = true;
         }
         else{
+            //assert if actor is self and if actor is required_permission.actor BUT NOT with execexecexec permission
             check(i->actor != get_self() && i->actor != required_permission.actor, "CRONEOS::ERR::017:: Not authorized to use this permission.");
         }
         
@@ -42,7 +43,7 @@ void croneoscore::sub_balance( const name& owner, const asset& value) {
    deposits_table _deposits( get_self(), owner.value);
 
    const auto& itr = _deposits.get( value.symbol.code().raw(), "CRONEOS::ERR::021:: No balance with this symbol.");
-   check( itr.balance.amount >= value.amount, "CRONEOS::ERR::022:: Overdrawn balance");
+   check( itr.balance.amount >= value.amount, "CRONEOS::ERR::022:: Overdrawn balance need "+ value.to_string() );
 
    _deposits.modify( itr, same_payer, [&]( auto& a) {
         a.balance -= value;
@@ -135,7 +136,7 @@ bool croneoscore::is_valid_fee_symbol(symbol& symbol){
 }
 
 name croneoscore::get_contract_for_symbol(symbol sym){
-
+    //croneos will only allow unique SYMBOLS even is from other contract
     gastokens_table _gastokens(get_self(), get_self().value);
     auto row = _gastokens.get(sym.raw());
     return row.token.contract;

@@ -16,15 +16,42 @@ CONTRACT croneoscore : public contract {
   public:
     using contract::contract;
 
-    ACTION schedule(name owner, name tag, vector<action> actions, time_point_sec due_date, uint32_t delay_sec, time_point_sec expiration, uint32_t expiration_sec, asset gas_fee, string description );
+    struct oracle_src{
+      string api_url;
+      string interested_key;
+    };
+
+    struct scope_meta{
+      string about;
+      string logo;
+    };
+
+    ACTION schedule(
+        name owner,
+        name scope, 
+        name tag,
+        name auth_guard,
+        vector<action> actions, 
+        time_point_sec due_date, 
+        uint32_t delay_sec, 
+        time_point_sec expiration, 
+        uint32_t expiration_sec, 
+        asset gas_fee, 
+        string description 
+    );
     ACTION cancel(name owner, uint64_t id );
     ACTION exec(name executer, uint64_t id);
+    ACTION execoracle(name executer, uint64_t id, std::vector<char> oracle_response);
     ACTION addblacklist(name contract);
     ACTION rmblacklist(name contract);
-    ACTION setsettings(uint8_t max_allowed_actions, vector<permission_level> required_exec_permission, uint8_t reward_fee_perc, name token_contract);
+    ACTION setsettings(uint8_t max_allowed_actions, vector<permission_level> required_exec_permission, uint8_t reward_fee_perc, asset new_scope_fee, name token_contract);
 
     ACTION withdraw( name miner, asset amount );
     ACTION refund(name owner, asset amount);
+
+    ACTION setprivscope (name actor, name scope_owner, name scope, bool remove);
+    ACTION setscopeuser (name owner, name scope, name user, bool remove);
+    ACTION setscopemeta (name owner, name scope, scope_meta meta);
 
     ACTION addgastoken(extended_asset gas_token);
     ACTION rmgastoken(asset gas_token);
@@ -43,12 +70,15 @@ CONTRACT croneoscore : public contract {
       uint64_t id;
       name owner;
       name tag;
+      name auth_guard;
       vector<action> actions;
       time_point_sec submitted;
       time_point_sec due_date;//calculated now + delay_sec
       time_point_sec expiration;
       asset gas_fee;
       string description;
+      uint8_t type;
+      //vector <oracle_src> oracle_srcs;
       
       uint64_t primary_key() const { return id; }
       uint64_t by_owner() const { return owner.value; }
@@ -109,10 +139,31 @@ CONTRACT croneoscore : public contract {
     uint8_t max_allowed_actions;
     vector<permission_level> required_exec_permission;
     uint8_t reward_fee_perc;
+    asset new_scope_fee;
     name token_contract;
   };
   typedef eosio::singleton<"settings"_n, settings> settings_table;
   //************************
+
+  //************************
+  TABLE privscopes {
+    name scope;
+    name owner;
+    scope_meta meta;
+    uint64_t primary_key() const { return scope.value; }
+  };
+  typedef multi_index<"privscopes"_n, privscopes > privscopes_table;
+  //************************
+
+  //************************
+  //scoped by private scope name
+  TABLE scopeusers {
+    name user;
+    uint64_t primary_key() const { return user.value; }
+  };
+  typedef multi_index<"scopeusers"_n, scopeusers > scopeusers_table;
+  //************************
+
 
   //************************
   //functions
