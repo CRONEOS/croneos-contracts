@@ -66,6 +66,10 @@
                 {
                     "name": "id",
                     "type": "uint64"
+                },
+                {
+                    "name": "scope",
+                    "type": "name"
                 }
             ]
         },
@@ -160,6 +164,10 @@
                 {
                     "name": "id",
                     "type": "uint64"
+                },
+                {
+                    "name": "scope",
+                    "type": "name"
                 }
             ]
         },
@@ -178,6 +186,10 @@
                 {
                     "name": "oracle_response",
                     "type": "bytes"
+                },
+                {
+                    "name": "scope",
+                    "type": "name"
                 }
             ]
         },

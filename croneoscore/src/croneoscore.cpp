@@ -31,7 +31,10 @@ ACTION croneoscore::schedule(
   require_auth(owner);
 
   //todo check if scope exist and if allowed to write to scope. owner must be user of scope!
-  name priv_scope = scope == name(0) ? get_self() : scope;
+  scope = scope == name(0) ? get_self() : scope;
+  if(scope != get_self() ){
+    check(has_scope_write_access(owner, scope), "User "+owner.to_string()+" is not authorized to schedule in "+scope.to_string()+" scope.");
+  }
 
   //validate and handle gas_fee
   check(is_valid_fee_symbol(gas_fee.symbol), "CRONEOS::ERR::001:: Symbol not allowed for paying gas.");
@@ -65,7 +68,7 @@ ACTION croneoscore::schedule(
 
   //////tag based logic//////
   
-  cronjobs_table _cronjobs(get_self(), get_self().value);
+  cronjobs_table _cronjobs(get_self(), scope.value);
 
   if(tag != name(0) ){
     auto by_owner_and_tag = _cronjobs.get_index<"byownertag"_n>();
@@ -106,11 +109,12 @@ ACTION croneoscore::schedule(
   });
 }
 
-ACTION croneoscore::cancel(name owner, uint64_t id ){
+ACTION croneoscore::cancel(name owner, uint64_t id, name scope){
     require_auth(owner);
-    cronjobs_table _cronjobs(get_self(), get_self().value);
+    scope = scope == name(0) ? get_self() : scope;
+    cronjobs_table _cronjobs(get_self(), scope.value);
     auto jobs_itr = _cronjobs.find(id);
-    check(jobs_itr != _cronjobs.end(), "CRONEOS::ERR::006:: Scheduled action with this id doesn't exists.");
+    check(jobs_itr != _cronjobs.end(), "CRONEOS::ERR::006:: Scheduled action with this id doesn't exists in "+ scope.to_string()+" scope.");
     check(jobs_itr->owner == owner, "CRONEOS::ERR::007:: You are not the owner of this job.");
     if(jobs_itr->gas_fee.amount > 0){
       add_balance( jobs_itr->owner, jobs_itr->gas_fee);//refund gas fee
@@ -118,7 +122,7 @@ ACTION croneoscore::cancel(name owner, uint64_t id ){
     _cronjobs.erase(jobs_itr);
 }
 
-ACTION croneoscore::execoracle(name executer, uint64_t id, std::vector<char> oracle_response){
+ACTION croneoscore::execoracle(name executer, uint64_t id, std::vector<char> oracle_response, name scope){
   require_auth(executer);
   //? can do this in the exec action... no need for separate execoracle ??
   //get job by id
@@ -131,11 +135,12 @@ ACTION croneoscore::execoracle(name executer, uint64_t id, std::vector<char> ora
   //delete job and pay miner
 }
 
-ACTION croneoscore::exec(name executer, uint64_t id){
+ACTION croneoscore::exec(name executer, uint64_t id, name scope){
   require_auth(executer);
-  cronjobs_table _cronjobs(get_self(), get_self().value);
+  scope = scope == name(0) ? get_self() : scope;
+  cronjobs_table _cronjobs(get_self(), scope.value);
   auto jobs_itr = _cronjobs.find(id);
-  check(jobs_itr != _cronjobs.end(), "CRONEOS::ERR::006:: Scheduled action with this id doesn't exists.");
+  check(jobs_itr != _cronjobs.end(), "CRONEOS::ERR::006:: Scheduled action with this id doesn't exists in "+ scope.to_string()+" scope.");
 
   //raquire auth from guard account
   if(jobs_itr->auth_guard != name(0) ){

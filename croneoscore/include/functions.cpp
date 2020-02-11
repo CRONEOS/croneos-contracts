@@ -142,6 +142,18 @@ name croneoscore::get_contract_for_symbol(symbol sym){
     return row.token.contract;
 }
 
+bool croneoscore::has_scope_write_access(const name& user, const name& scope){
+  scopeusers_table _scopeusers(get_self(), scope.value);
+  auto itr_scopeusr = _scopeusers.find(user.value);
+  if(itr_scopeusr == _scopeusers.end() ){
+    return false;
+  }
+  else{
+    return true;
+  }
+
+}
+
 
 
 

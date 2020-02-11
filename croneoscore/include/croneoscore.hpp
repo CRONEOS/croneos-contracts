@@ -39,9 +39,10 @@ CONTRACT croneoscore : public contract {
         asset gas_fee, 
         string description 
     );
-    ACTION cancel(name owner, uint64_t id );
-    ACTION exec(name executer, uint64_t id);
-    ACTION execoracle(name executer, uint64_t id, std::vector<char> oracle_response);
+    ACTION cancel(name owner, uint64_t id, name scope);
+    ACTION exec(name executer, uint64_t id, name scope);
+    ACTION execoracle(name executer, uint64_t id, std::vector<char> oracle_response, name scope);
+    
     ACTION addblacklist(name contract);
     ACTION rmblacklist(name contract);
     ACTION setsettings(uint8_t max_allowed_actions, vector<permission_level> required_exec_permission, uint8_t reward_fee_perc, asset new_scope_fee, name token_contract);
@@ -179,6 +180,8 @@ CONTRACT croneoscore : public contract {
   void sub_reward( const name& miner,  asset value);
   void add_reward( const name& miner,  asset value, const settings& setting);
   name get_contract_for_symbol(symbol sym);
+
+  bool has_scope_write_access(const name&  user, const name& scope);
 
   template <typename T>
   void cleanTable(name code, uint64_t account, const uint32_t batchSize){
