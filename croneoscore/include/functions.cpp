@@ -7,7 +7,7 @@ auto croneoscore::get_settings(){
 
 void croneoscore::assert_invalid_authorization(vector<permission_level> auths, const settings& setting){
     bool has_required_auth = false;
-    permission_level required_permission = setting.required_exec_permission[0]; // execexecexec@active
+    permission_level required_permission = setting.required_exec_permission[0]; // execexecexec@active -> todo use custom for scope
 
     for ( auto i = auths.begin(); i != auths.end(); i++ ) {
 
@@ -15,7 +15,7 @@ void croneoscore::assert_invalid_authorization(vector<permission_level> auths, c
             has_required_auth = true;
         }
         else{
-            //assert if actor is self and if actor is required_permission.actor BUT NOT with execexecexec permission
+            //assert if actor is self and if actor is required_permission.actor BUT NOT with correct permission (ie active)
             check(i->actor != get_self() && i->actor != required_permission.actor, "CRONEOS::ERR::017:: Not authorized to use this permission.");
         }
         

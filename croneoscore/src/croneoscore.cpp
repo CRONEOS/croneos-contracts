@@ -19,29 +19,40 @@ ACTION croneoscore::schedule(
     name owner,
     name scope, 
     name tag,
-    name auth_guard, 
+    name auth_bouncer, 
     vector<action> actions, 
     time_point_sec due_date, 
     uint32_t delay_sec, 
     time_point_sec expiration, 
     uint32_t expiration_sec, 
     asset gas_fee, 
-    string description 
-  ){
+    string description,
+    vector<oracle_src> oracle_srcs
+){
   require_auth(owner);
 
-  //todo check if scope exist and if allowed to write to scope. owner must be user of scope!
   scope = scope == name(0) ? get_self() : scope;
   if(scope != get_self() ){
     check(has_scope_write_access(owner, scope), "User "+owner.to_string()+" is not authorized to schedule in "+scope.to_string()+" scope.");
   }
-
+  uint8_t max_exec_count = 1;//todo must be action argument
   //validate and handle gas_fee
   check(is_valid_fee_symbol(gas_fee.symbol), "CRONEOS::ERR::001:: Symbol not allowed for paying gas.");
   check(gas_fee.amount >= 0, "CRONEOS::ERR::002:: gas fee can't be negative.");
   if(gas_fee.amount > 0){
-    sub_balance(owner, gas_fee);
+    if(max_exec_count == 1){
+      sub_balance(owner, gas_fee);
+    }
+    else{
+     check(max_exec_count > 0, "max_exec_count must be greater then zero.");
+     sub_balance(owner, gas_fee*max_exec_count); 
+    }
   }
+  else{
+    //no gas payed, restrict max_exec_count
+    check(max_exec_count == 1, "Max exec count must be 1 for jobs without gas fee.");
+  }
+
   time_point_sec now = time_point_sec(current_time_point());
   /////////// time conversions and checks //////////////
   time_point_sec exec_date;
@@ -99,13 +110,14 @@ ACTION croneoscore::schedule(
     n.id = _cronjobs.available_primary_key();
     n.owner = owner;
     n.tag = tag;
-    n.auth_guard = auth_guard;
+    n.auth_bouncer = auth_bouncer;
     n.actions = actions;
     n.due_date = exec_date;
     n.expiration = expiration_date; 
     n.submitted = now;
     n.gas_fee = gas_fee;// can be zero
     n.description = description;//optional
+    n.oracle_srcs = oracle_srcs;
   });
 }
 
@@ -117,6 +129,7 @@ ACTION croneoscore::cancel(name owner, uint64_t id, name scope){
     check(jobs_itr != _cronjobs.end(), "CRONEOS::ERR::006:: Scheduled action with this id doesn't exists in "+ scope.to_string()+" scope.");
     check(jobs_itr->owner == owner, "CRONEOS::ERR::007:: You are not the owner of this job.");
     if(jobs_itr->gas_fee.amount > 0){
+      //todo exec_count (left over) * gas fee
       add_balance( jobs_itr->owner, jobs_itr->gas_fee);//refund gas fee
     }
     _cronjobs.erase(jobs_itr);
@@ -124,6 +137,17 @@ ACTION croneoscore::cancel(name owner, uint64_t id, name scope){
 
 ACTION croneoscore::execoracle(name executer, uint64_t id, std::vector<char> oracle_response, name scope){
   require_auth(executer);
+  scope = scope == name(0) ? get_self() : scope;
+  cronjobs_table _cronjobs(get_self(), scope.value);
+  auto jobs_itr = _cronjobs.find(id);
+  check(jobs_itr != _cronjobs.end(), "CRONEOS::ERR::006:: Scheduled action with this id doesn't exists in "+ scope.to_string()+" scope.");
+
+  //send-execute scheduled actions
+  for(vector<int>::size_type i = 0; i != jobs_itr->actions.size(); i++) { 
+      eosio::action act = jobs_itr->actions[i];
+      act.data = oracle_response;
+      act.send();
+  }
   //? can do this in the exec action... no need for separate execoracle ??
   //get job by id
   //auth guard
@@ -142,9 +166,9 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope){
   auto jobs_itr = _cronjobs.find(id);
   check(jobs_itr != _cronjobs.end(), "CRONEOS::ERR::006:: Scheduled action with this id doesn't exists in "+ scope.to_string()+" scope.");
 
-  //raquire auth from guard account
-  if(jobs_itr->auth_guard != name(0) ){
-    require_auth(jobs_itr->auth_guard);
+  //require auth from guard account
+  if(jobs_itr->auth_bouncer != name(0) ){
+    require_auth(jobs_itr->auth_bouncer);
   }
 
   time_point_sec now = time_point_sec(current_time_point());
@@ -176,8 +200,17 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope){
     add_reward(executer, jobs_itr->gas_fee, setting);
   }
 
-  //update cronjobs table: should delete entry, make it optional?
-  _cronjobs.erase(jobs_itr);
+  //_cronjobs.erase(jobs_itr);
+
+  if(jobs_itr->max_exec_count == 1){
+    //this was the last execution so erase
+    _cronjobs.erase(jobs_itr);
+  }
+  else{
+    _cronjobs.modify( jobs_itr, same_payer, [&]( auto& n) {
+        n.max_exec_count--;
+    });
+  }
 
 }
 
@@ -292,6 +325,23 @@ ACTION croneoscore::setscopemeta (name owner, name scope, scope_meta meta){
   _privscopes.modify( priv_itr, same_payer, [&]( auto& n) {
     n.meta = meta;
   });
+}
+
+ACTION croneoscore::setscopeexec (name owner, name scope, vector<permission_level> required_exec_permissions){
+  require_auth(owner);
+  privscopes_table _privscopes(get_self(), get_self().value);
+  auto priv_itr = _privscopes.find(scope.value);
+  check(priv_itr != _privscopes.end(), "Private scope doesn't exist." );
+  check(priv_itr->owner == owner, "You are not the owner/admin of this scope.");
+
+
+  _privscopes.modify( priv_itr, same_payer, [&]( auto& n) {
+    n.required_exec_permissions = required_exec_permissions;
+  });
+
+
+  //check(test > 0, get_self().to_string()+"@active"+" doesn't have permission to use "+required_exec_permissions[0].actor.to_string()+"@"+required_exec_permissions[0].permission.to_string() );
+
 }
 
 ACTION croneoscore::setscopeuser (name owner, name scope, name user, bool remove){
