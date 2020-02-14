@@ -95,7 +95,7 @@
                     "type": "name"
                 },
                 {
-                    "name": "auth_guard",
+                    "name": "auth_bouncer",
                     "type": "name"
                 },
                 {
@@ -123,8 +123,12 @@
                     "type": "string"
                 },
                 {
-                    "name": "type",
+                    "name": "max_exec_count",
                     "type": "uint8"
+                },
+                {
+                    "name": "oracle_srcs",
+                    "type": "oracle_src[]"
                 }
             ]
         },
@@ -204,6 +208,20 @@
             ]
         },
         {
+            "name": "oracle_src",
+            "base": "",
+            "fields": [
+                {
+                    "name": "api_url",
+                    "type": "string"
+                },
+                {
+                    "name": "json_path",
+                    "type": "string"
+                }
+            ]
+        },
+        {
             "name": "permission_level",
             "base": "",
             "fields": [
@@ -228,6 +246,10 @@
                 {
                     "name": "owner",
                     "type": "name"
+                },
+                {
+                    "name": "required_exec_permissions",
+                    "type": "permission_level[]"
                 },
                 {
                     "name": "meta",
@@ -296,7 +318,7 @@
                     "type": "name"
                 },
                 {
-                    "name": "auth_guard",
+                    "name": "auth_bouncer",
                     "type": "name"
                 },
                 {
@@ -326,6 +348,10 @@
                 {
                     "name": "description",
                     "type": "string"
+                },
+                {
+                    "name": "oracle_srcs",
+                    "type": "oracle_src[]"
                 }
             ]
         },
@@ -372,6 +398,24 @@
                 {
                     "name": "remove",
                     "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "setscopeexec",
+            "base": "",
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "scope",
+                    "type": "name"
+                },
+                {
+                    "name": "required_exec_permissions",
+                    "type": "permission_level[]"
                 }
             ]
         },
@@ -546,6 +590,11 @@
         {
             "name": "setprivscope",
             "type": "setprivscope",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "setscopeexec",
+            "type": "setscopeexec",
             "ricardian_contract": ""
         },
         {
