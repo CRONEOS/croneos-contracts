@@ -1,3 +1,10 @@
+uint64_t croneoscore::get_next_primary_key(){
+  state_table _state(get_self(), get_self().value);
+  auto s = _state.get_or_create(get_self(), state());
+  s.schedule_count = s.schedule_count + 1;
+  _state.set(s, get_self());
+  return s.schedule_count;
+};
 
 auto croneoscore::get_settings(){
   settings_table _settings(get_self(), get_self().value);

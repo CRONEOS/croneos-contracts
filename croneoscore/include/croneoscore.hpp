@@ -42,8 +42,8 @@ CONTRACT croneoscore : public contract {
         vector<oracle_src> oracle_srcs
     );
     ACTION cancel(name owner, uint64_t id, name scope);
-    ACTION exec(name executer, uint64_t id, name scope);
-    ACTION execoracle(name executer, uint64_t id, std::vector<char> oracle_response, name scope);
+    ACTION exec(name executer, uint64_t id, name scope, std::vector<char> oracle_response);
+    //ACTION execoracle(name executer, uint64_t id, std::vector<char> oracle_response, name scope);
 
     ACTION addblacklist(name contract);
     ACTION rmblacklist(name contract);
@@ -64,6 +64,7 @@ CONTRACT croneoscore : public contract {
     ACTION delrewards(name scope);
     ACTION delsettings();
     ACTION clear();
+    
     //notification handlers
     [[eosio::on_notify("*::transfer")]]
     void top_up_balance(name from, name to, asset quantity, string memo);
@@ -151,6 +152,15 @@ CONTRACT croneoscore : public contract {
   typedef eosio::singleton<"settings"_n, settings> settings_table;
   //************************
 
+  //************************  
+  TABLE state {
+    uint64_t schedule_count;
+    uint64_t exec_count;
+    uint64_t cancel_count;
+  };
+  typedef eosio::singleton<"state"_n, state> state_table;
+  //************************
+
   //************************
   TABLE privscopes {
     name scope;
@@ -178,6 +188,8 @@ CONTRACT croneoscore : public contract {
   //************************
   //functions
   //************************
+  uint64_t get_next_primary_key();
+
   void assert_invalid_authorization(vector<permission_level> auths, const settings& setting);
   void assert_blacklisted_account(name account);
   void assert_blacklisted_actionname(name actionname);
