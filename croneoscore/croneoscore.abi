@@ -172,28 +172,10 @@
                 {
                     "name": "scope",
                     "type": "name"
-                }
-            ]
-        },
-        {
-            "name": "execoracle",
-            "base": "",
-            "fields": [
-                {
-                    "name": "executer",
-                    "type": "name"
-                },
-                {
-                    "name": "id",
-                    "type": "uint64"
                 },
                 {
                     "name": "oracle_response",
                     "type": "bytes"
-                },
-                {
-                    "name": "scope",
-                    "type": "name"
                 }
             ]
         },
@@ -512,6 +494,24 @@
             ]
         },
         {
+            "name": "state",
+            "base": "",
+            "fields": [
+                {
+                    "name": "schedule_count",
+                    "type": "uint64"
+                },
+                {
+                    "name": "exec_count",
+                    "type": "uint64"
+                },
+                {
+                    "name": "cancel_count",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
             "name": "withdraw",
             "base": "",
             "fields": [
@@ -561,11 +561,6 @@
             "name": "exec",
             "type": "exec",
             "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: Execute\nsummary: 'Execute scheduled job.'\nicon: https://croneos.io/statics/app-logo-128x128.png#d39fc7767099890429d926339b4d13af66b77db9b443366002227bad9bb1896e\n---\n{{executer}} agrees to execute cronjob with id {{id}} and acknowledge that CPU will be used."
-        },
-        {
-            "name": "execoracle",
-            "type": "execoracle",
-            "ricardian_contract": ""
         },
         {
             "name": "refund",
@@ -671,6 +666,13 @@
         {
             "name": "settings",
             "type": "settings",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "state",
+            "type": "state",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

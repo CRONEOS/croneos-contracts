@@ -39,6 +39,9 @@ ACTION croneoscore::schedule(
   //validate and handle gas_fee
   check(is_valid_fee_symbol(gas_fee.symbol), "CRONEOS::ERR::001:: Symbol not allowed for paying gas.");
   check(gas_fee.amount >= 0, "CRONEOS::ERR::002:: gas fee can't be negative.");
+  if(oracle_srcs.size() != 0){
+    check(actions.size() == 1, "Oracle job must contain 1 action.");
+  }
   if(gas_fee.amount > 0){
     if(max_exec_count == 1){
       sub_balance(owner, gas_fee);
@@ -107,7 +110,8 @@ ACTION croneoscore::schedule(
 
   ////all checks and processing done -> insert in to cronjobs table///
   _cronjobs.emplace(owner, [&](auto& n) {
-    n.id = _cronjobs.available_primary_key();
+    //n.id = _cronjobs.available_primary_key();
+    n.id = get_next_primary_key();
     n.owner = owner;
     n.tag = tag;
     n.auth_bouncer = auth_bouncer;
@@ -133,33 +137,15 @@ ACTION croneoscore::cancel(name owner, uint64_t id, name scope){
       add_balance( jobs_itr->owner, jobs_itr->gas_fee);//refund gas fee
     }
     _cronjobs.erase(jobs_itr);
+
+    state_table _state(get_self(), get_self().value);
+    auto s = _state.get();
+    s.cancel_count += 1;
+    _state.set(s, get_self());
 }
 
-ACTION croneoscore::execoracle(name executer, uint64_t id, std::vector<char> oracle_response, name scope){
-  require_auth(executer);
-  scope = scope == name(0) ? get_self() : scope;
-  cronjobs_table _cronjobs(get_self(), scope.value);
-  auto jobs_itr = _cronjobs.find(id);
-  check(jobs_itr != _cronjobs.end(), "CRONEOS::ERR::006:: Scheduled action with this id doesn't exists in "+ scope.to_string()+" scope.");
 
-  //send-execute scheduled actions
-  for(vector<int>::size_type i = 0; i != jobs_itr->actions.size(); i++) { 
-      eosio::action act = jobs_itr->actions[i];
-      act.data = oracle_response;
-      act.send();
-  }
-  //? can do this in the exec action... no need for separate execoracle ??
-  //get job by id
-  //auth guard
-  //check if oracle_srcs isn't empty
-  //check if due date met
-  //check if not expired
-  //substitute job action data with oracle_response
-  //send
-  //delete job and pay miner
-}
-
-ACTION croneoscore::exec(name executer, uint64_t id, name scope){
+ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<char> oracle_response){
   require_auth(executer);
   scope = scope == name(0) ? get_self() : scope;
   cronjobs_table _cronjobs(get_self(), scope.value);
@@ -187,10 +173,20 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope){
   //assert when job isn't ready to be executed
   check( now >= jobs_itr->due_date , "CRONEOS::ERR::007:: Exec attempt too early.");
 
-  //send-execute scheduled actions
-  for(vector<int>::size_type i = 0; i != jobs_itr->actions.size(); i++) { 
-      jobs_itr->actions[i].send();
+  //send-execute scheduled action
+  if(jobs_itr->oracle_srcs.size() != 0){
+    //is oracle request
+    eosio::action act = jobs_itr->actions[0]; //oracle job can only hold one action
+    act.data = oracle_response;
+    act.send();
   }
+  else{
+    //normal scheduled job
+    for(vector<int>::size_type i = 0; i != jobs_itr->actions.size(); i++) { 
+        jobs_itr->actions[i].send();
+    }
+  }
+
 
   settings setting = get_settings();
   //payout rewards 
@@ -211,6 +207,11 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope){
         n.max_exec_count--;
     });
   }
+
+  state_table _state(get_self(), get_self().value);
+  auto s = _state.get();
+  s.exec_count += 1;
+  _state.set(s, get_self());
 
 }
 
