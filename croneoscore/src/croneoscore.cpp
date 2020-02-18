@@ -165,7 +165,10 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
       add_balance( jobs_itr->owner, jobs_itr->gas_fee);//refund gas fee
       //todo pay small cron reward for deleting expired
     }
-    
+    state_table _state(get_self(), get_self().value);
+    auto s = _state.get();
+    s.expired_count += 1;
+    _state.set(s, get_self());
     _cronjobs.erase(jobs_itr);
     return;
   }
@@ -177,6 +180,9 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
   if(jobs_itr->oracle_srcs.size() != 0){
     //is oracle request
     eosio::action act = jobs_itr->actions[0]; //oracle job can only hold one action
+    //first 8 bytes must be miner/executer
+    name miner = unpack<name>(std::vector<char>(oracle_response.begin(), oracle_response.begin() + 8) );
+    check(executer == miner, "Oracle data miner isn't the executer of the job.");
     act.data = oracle_response;
     act.send();
   }
@@ -255,7 +261,11 @@ ACTION croneoscore::rmgastoken(asset gas_token){
   _gastokens.erase(token_itr);
 }
 
-
+ACTION croneoscore::resetstate(){
+  require_auth(get_self());
+  state_table _state(get_self(), get_self().value);
+  _state.set(state(), get_self());
+}
 
 ACTION croneoscore::refund(name owner, asset amount) {
   //refund ~= withdrawal from gas deposits
