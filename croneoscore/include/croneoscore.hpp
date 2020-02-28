@@ -49,6 +49,8 @@ CONTRACT croneoscore : public contract {
     ACTION rmblacklist(name contract);
     ACTION setsettings(uint8_t max_allowed_actions, vector<permission_level> required_exec_permission, uint8_t reward_fee_perc, asset new_scope_fee, name token_contract);
 
+    ACTION resetstate();
+
     ACTION withdraw( name miner, asset amount );
     ACTION refund(name owner, asset amount);
 
@@ -157,6 +159,7 @@ CONTRACT croneoscore : public contract {
     uint64_t schedule_count;
     uint64_t exec_count;
     uint64_t cancel_count;
+    uint64_t expired_count;
   };
   typedef eosio::singleton<"state"_n, state> state_table;
   //************************

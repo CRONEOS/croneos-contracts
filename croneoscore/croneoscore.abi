@@ -254,6 +254,11 @@
             ]
         },
         {
+            "name": "resetstate",
+            "base": "",
+            "fields": []
+        },
+        {
             "name": "rewards",
             "base": "",
             "fields": [
@@ -508,6 +513,10 @@
                 {
                     "name": "cancel_count",
                     "type": "uint64"
+                },
+                {
+                    "name": "expired_count",
+                    "type": "uint64"
                 }
             ]
         },
@@ -566,6 +575,11 @@
             "name": "refund",
             "type": "refund",
             "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: Refund Deposit\nsummary: 'Refund deposit.'\nicon: https://croneos.io/statics/app-logo-128x128.png#d39fc7767099890429d926339b4d13af66b77db9b443366002227bad9bb1896e\n---\n{{owner}} agrees to receive a refund of {{amount}} via an inline transfer initiated by the contract. The {{asset_to_symbol_code amount}} will be substracted from {{owner}}'s deposit."
+        },
+        {
+            "name": "resetstate",
+            "type": "resetstate",
+            "ricardian_contract": ""
         },
         {
             "name": "rmblacklist",
