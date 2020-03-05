@@ -30,12 +30,7 @@ void croneoscore::assert_invalid_authorization(vector<permission_level> auths, c
     check(has_required_auth, "CRONEOS::ERR::018:: Scheduled actions must be authorized with the required_exec_permission.");//see settings table
 }
 
-void croneoscore::assert_blacklisted_account(name account){
-    blacklist_table _blacklist(get_self(), get_self().value);
-    auto blacklist_itr = _blacklist.find(account.value);
-    check(blacklist_itr == _blacklist.end(), "CRONEOS::ERR::019:: Actions from this contract are blacklisted. Call these actions inline in your own contract and schedule that instead.");
-}
-
+/*
 void croneoscore::assert_blacklisted_actionname(name actionname){
   check(
     actionname != "transfer"_n
@@ -45,6 +40,7 @@ void croneoscore::assert_blacklisted_actionname(name actionname){
     );
 
 }
+*/
 
 void croneoscore::sub_balance( const name& owner, const asset& value) {
    deposits_table _deposits( get_self(), owner.value);

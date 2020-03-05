@@ -10,9 +10,9 @@
   },
   "deploy": {
     "target": "both",
-    "mainnet": "",
+    "mainnet": "cron.eos",
     "kylin": "",
-    "jungle": "piecestest12",
+    "jungle": "",
     "local": ""
   },
   "test": {

@@ -26,32 +26,12 @@
             ]
         },
         {
-            "name": "addblacklist",
-            "base": "",
-            "fields": [
-                {
-                    "name": "contract",
-                    "type": "name"
-                }
-            ]
-        },
-        {
             "name": "addgastoken",
             "base": "",
             "fields": [
                 {
                     "name": "gas_token",
                     "type": "extended_asset"
-                }
-            ]
-        },
-        {
-            "name": "blacklist",
-            "base": "",
-            "fields": [
-                {
-                    "name": "contract",
-                    "type": "name"
                 }
             ]
         },
@@ -180,6 +160,24 @@
             ]
         },
         {
+            "name": "execaccounts",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "exec_permission",
+                    "type": "permission_level"
+                }
+            ]
+        },
+        {
             "name": "gastokens",
             "base": "",
             "fields": [
@@ -230,10 +228,6 @@
                     "type": "name"
                 },
                 {
-                    "name": "required_exec_permissions",
-                    "type": "permission_level[]"
-                },
-                {
                     "name": "meta",
                     "type": "scope_meta"
                 }
@@ -265,16 +259,6 @@
                 {
                     "name": "adj_p_balance",
                     "type": "asset"
-                }
-            ]
-        },
-        {
-            "name": "rmblacklist",
-            "base": "",
-            "fields": [
-                {
-                    "name": "contract",
-                    "type": "name"
                 }
             ]
         },
@@ -367,6 +351,24 @@
             ]
         },
         {
+            "name": "setexecacc",
+            "base": "",
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "exec_permission",
+                    "type": "permission_level"
+                },
+                {
+                    "name": "remove",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
             "name": "setprivscope",
             "base": "",
             "fields": [
@@ -385,24 +387,6 @@
                 {
                     "name": "remove",
                     "type": "bool"
-                }
-            ]
-        },
-        {
-            "name": "setscopeexec",
-            "base": "",
-            "fields": [
-                {
-                    "name": "owner",
-                    "type": "name"
-                },
-                {
-                    "name": "scope",
-                    "type": "name"
-                },
-                {
-                    "name": "required_exec_permissions",
-                    "type": "permission_level[]"
                 }
             ]
         },
@@ -537,11 +521,6 @@
     ],
     "actions": [
         {
-            "name": "addblacklist",
-            "type": "addblacklist",
-            "ricardian_contract": ""
-        },
-        {
             "name": "addgastoken",
             "type": "addgastoken",
             "ricardian_contract": ""
@@ -582,11 +561,6 @@
             "ricardian_contract": ""
         },
         {
-            "name": "rmblacklist",
-            "type": "rmblacklist",
-            "ricardian_contract": ""
-        },
-        {
             "name": "rmgastoken",
             "type": "rmgastoken",
             "ricardian_contract": ""
@@ -597,13 +571,13 @@
             "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: Schedule Job\nsummary: 'Schedule a new cronjob.'\nicon: https://croneos.io/statics/app-logo-128x128.png#d39fc7767099890429d926339b4d13af66b77db9b443366002227bad9bb1896e\n---\n{{owner}} agrees to schedule a new cronjob and acknowledge that this action will temporary consume RAM until the job is executed or cancelled."
         },
         {
-            "name": "setprivscope",
-            "type": "setprivscope",
+            "name": "setexecacc",
+            "type": "setexecacc",
             "ricardian_contract": ""
         },
         {
-            "name": "setscopeexec",
-            "type": "setscopeexec",
+            "name": "setprivscope",
+            "type": "setprivscope",
             "ricardian_contract": ""
         },
         {
@@ -629,13 +603,6 @@
     ],
     "tables": [
         {
-            "name": "blacklist",
-            "type": "blacklist",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
             "name": "cronjobs",
             "type": "cronjobs",
             "index_type": "i64",
@@ -645,6 +612,13 @@
         {
             "name": "deposits",
             "type": "deposits",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "execaccounts",
+            "type": "execaccounts",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
