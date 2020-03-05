@@ -43,10 +43,7 @@ CONTRACT croneoscore : public contract {
     );
     ACTION cancel(name owner, uint64_t id, name scope);
     ACTION exec(name executer, uint64_t id, name scope, std::vector<char> oracle_response);
-    //ACTION execoracle(name executer, uint64_t id, std::vector<char> oracle_response, name scope);
 
-    ACTION addblacklist(name contract);
-    ACTION rmblacklist(name contract);
     ACTION setsettings(uint8_t max_allowed_actions, vector<permission_level> required_exec_permission, uint8_t reward_fee_perc, asset new_scope_fee, name token_contract);
 
     ACTION resetstate();
@@ -54,8 +51,9 @@ CONTRACT croneoscore : public contract {
     ACTION withdraw( name miner, asset amount );
     ACTION refund(name owner, asset amount);
 
+    ACTION setexecacc (name owner, permission_level exec_permission, bool remove);
+
     ACTION setprivscope (name actor, name scope_owner, name scope, bool remove);
-    ACTION setscopeexec (name owner, name scope, vector<permission_level> required_exec_permissions);
     ACTION setscopemeta (name owner, name scope, scope_meta meta);
     ACTION setscopeuser (name owner, name scope, name user, bool remove);
     
@@ -87,7 +85,7 @@ CONTRACT croneoscore : public contract {
       string description;
       uint8_t max_exec_count=1;
       vector<oracle_src> oracle_srcs;
-      //vector <oracle_src> oracle_srcs;
+
       
       uint64_t primary_key() const { return id; }
       uint64_t by_owner() const { return owner.value; }
@@ -102,14 +100,6 @@ CONTRACT croneoscore : public contract {
     > cronjobs_table;
   //************************
 
-  //************************
-    TABLE blacklist {
-      name contract;
-      auto primary_key() const { return contract.value; }
-    };
-    typedef multi_index<"blacklist"_n, blacklist> blacklist_table;
-
-  //************************
 
     //************************
     TABLE gastokens {
@@ -165,10 +155,28 @@ CONTRACT croneoscore : public contract {
   //************************
 
   //************************
+  TABLE execaccounts {
+    uint64_t id;
+    name owner;
+    permission_level exec_permission;
+
+    uint64_t primary_key() const { return id; }
+    uint64_t by_owner() const { return owner.value; }
+    uint64_t by_acc() const { return exec_permission.actor.value; }
+    //uint128_t by_perm() const { return (uint128_t{exec_permission.actor.value} << 64) | exec_permission.permission.value; };
+  };
+  typedef multi_index<"execaccounts"_n, execaccounts,
+    indexed_by<"byowner"_n, const_mem_fun<execaccounts, uint64_t, &execaccounts::by_owner>>,
+    indexed_by<"byacc"_n, const_mem_fun<execaccounts, uint64_t, &execaccounts::by_acc>>
+    //indexed_by<"byperm"_n, const_mem_fun<execaccounts, uint128_t, &execaccounts::by_perm>>
+  > execaccounts_table;
+  //************************
+
+
+  //************************
   TABLE privscopes {
     name scope;
     name owner;
-    vector<permission_level> required_exec_permissions;//if set this will override the default required_exec_permission
     scope_meta meta;
     uint64_t primary_key() const { return scope.value; }
     uint64_t by_owner() const { return owner.value; }
@@ -194,8 +202,7 @@ CONTRACT croneoscore : public contract {
   uint64_t get_next_primary_key();
 
   void assert_invalid_authorization(vector<permission_level> auths, const settings& setting);
-  void assert_blacklisted_account(name account);
-  void assert_blacklisted_actionname(name actionname);
+  //void assert_blacklisted_actionname(name actionname);
   bool is_valid_fee_token(name tokencontract, asset quantity);
   bool is_valid_fee_symbol(symbol& symbol);
   auto get_settings();

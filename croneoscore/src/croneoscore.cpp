@@ -2,7 +2,12 @@
 #include <functions.cpp>
 #include <dev.cpp>
 
-ACTION croneoscore::setsettings(uint8_t max_allowed_actions, vector<permission_level> required_exec_permission, uint8_t reward_fee_perc, asset new_scope_fee, name token_contract){
+ACTION croneoscore::setsettings(
+  uint8_t max_allowed_actions, 
+  vector<permission_level> required_exec_permission, 
+  uint8_t reward_fee_perc, asset new_scope_fee, 
+  name token_contract
+){
     require_auth(get_self());
     settings_table _settings(get_self(), get_self().value);
     _settings.set(settings{
@@ -69,14 +74,35 @@ ACTION croneoscore::schedule(
   ////////////end time stuff////////////
 
   settings setting = get_settings();
-
   /////validate scheduled actions////////
   check(actions.size() <= setting.max_allowed_actions && actions.size() > 0, "CRONEOS::ERR::005:: Number of actions not allowed.");
 
-  for ( auto i = actions.begin(); i != actions.end(); i++ ) {
-    assert_blacklisted_account(i->account);
-    assert_blacklisted_actionname(i->name);
-    assert_invalid_authorization(i->authorization, setting);
+  execaccounts_table _execaccounts(get_self(), get_self().value);
+  auto by_acc = _execaccounts.get_index<"byacc"_n>();
+
+  for(action act : actions){
+    //also allow scheduling actions from other contracts???
+    check(act.account == owner, "Scheduled action must be from owner contract "+owner.to_string() );
+
+    bool has_required_auth = false;
+    for(permission_level pl : act.authorization){
+
+      if(pl == setting.required_exec_permission[0]){//default permission always allowed
+        has_required_auth = true;
+      }
+      else{
+        check(pl.actor != get_self(), "Not authorized.");
+        auto exec_perm_itr = by_acc.find(pl.actor.value);
+        if(exec_perm_itr != by_acc.end() ){
+          check(exec_perm_itr->owner == owner && exec_perm_itr->exec_permission.permission == pl.permission, "Not authorized to use "+pl.actor.to_string()+"@"+pl.permission.to_string()+" as execution permission.");
+          has_required_auth = true;
+        }
+        else{
+          check(false, "Exec permission "+pl.actor.to_string()+"@"+pl.permission.to_string()+" needs to be registered before use.");
+        }
+      }
+    }
+    check(has_required_auth, "CRONEOS::ERR::018:: Scheduled actions must be authorized with a valid exec_permission.");
   }
   /////end validate scheduled actions////////
 
@@ -110,7 +136,6 @@ ACTION croneoscore::schedule(
 
   ////all checks and processing done -> insert in to cronjobs table///
   _cronjobs.emplace(owner, [&](auto& n) {
-    //n.id = _cronjobs.available_primary_key();
     n.id = get_next_primary_key();
     n.owner = owner;
     n.tag = tag;
@@ -152,10 +177,7 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
   auto jobs_itr = _cronjobs.find(id);
   check(jobs_itr != _cronjobs.end(), "CRONEOS::ERR::006:: Scheduled action with this id doesn't exists in "+ scope.to_string()+" scope.");
 
-  //require auth from guard account
-  if(jobs_itr->auth_bouncer != name(0) ){
-    require_auth(jobs_itr->auth_bouncer);
-  }
+
 
   time_point_sec now = time_point_sec(current_time_point());
   //check if job is expired
@@ -163,7 +185,6 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
     
     if(jobs_itr->gas_fee.amount > 0){
       add_balance( jobs_itr->owner, jobs_itr->gas_fee);//refund gas fee
-      //todo pay small cron reward for deleting expired
     }
     state_table _state(get_self(), get_self().value);
     auto s = _state.get();
@@ -171,6 +192,11 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
     _state.set(s, get_self());
     _cronjobs.erase(jobs_itr);
     return;
+  }
+
+  //require auth from guard account
+  if(jobs_itr->auth_bouncer != name(0) ){
+    require_auth(jobs_itr->auth_bouncer);
   }
 
   //assert when job isn't ready to be executed
@@ -193,12 +219,10 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
     }
   }
 
-
   settings setting = get_settings();
   //payout rewards 
   if(jobs_itr->gas_fee.amount > 0){
     //todo payout CRON
-    //todo only part of gas fee
     add_reward(executer, jobs_itr->gas_fee, setting);
   }
 
@@ -219,25 +243,6 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
   s.exec_count += 1;
   _state.set(s, get_self());
 
-}
-
-ACTION croneoscore::addblacklist(name contract){
-  require_auth(get_self());
-  blacklist_table _blacklist(get_self(), get_self().value);
-  auto blacklist_itr = _blacklist.find(contract.value);
-  check(blacklist_itr == _blacklist.end(), "CRONEOS::ERR::008:: Account already blacklisted.");
-  check(is_account(contract), "CRONEOS::ERR::009:: The account doesn't exists.");
-
-  _blacklist.emplace(get_self(), [&](auto& n) {
-    n.contract = contract;
-  });
-}
-ACTION croneoscore::rmblacklist(name contract){
-  require_auth(get_self());
-  blacklist_table _blacklist(get_self(), get_self().value);
-  auto blacklist_itr = _blacklist.find(contract.value);
-  check(blacklist_itr != _blacklist.end(), "CRONEOS::ERR::010:: Account not in blacklist.");
-  _blacklist.erase(blacklist_itr);
 }
 
 ACTION croneoscore::addgastoken(extended_asset gas_token){
@@ -280,6 +285,7 @@ ACTION croneoscore::refund(name owner, asset amount) {
 }
 
 ACTION croneoscore::withdraw( name miner, asset amount){
+  //withdraw miner rewards
   require_auth(miner);
   check(amount.amount > 0, "CRONEOS::ERR::013:: Amount must be greater then zero.");
   sub_reward( miner, amount);
@@ -327,6 +333,7 @@ ACTION croneoscore::setprivscope (name actor, name owner, name scope, bool remov
 
   }
 }
+
 ACTION croneoscore::setscopemeta (name owner, name scope, scope_meta meta){
   require_auth(owner);
   privscopes_table _privscopes(get_self(), get_self().value);
@@ -338,22 +345,40 @@ ACTION croneoscore::setscopemeta (name owner, name scope, scope_meta meta){
   });
 }
 
-ACTION croneoscore::setscopeexec (name owner, name scope, vector<permission_level> required_exec_permissions){
+
+ACTION croneoscore::setexecacc (name owner, permission_level exec_permission, bool remove){
+
   require_auth(owner);
-  privscopes_table _privscopes(get_self(), get_self().value);
-  auto priv_itr = _privscopes.find(scope.value);
-  check(priv_itr != _privscopes.end(), "Private scope doesn't exist." );
-  check(priv_itr->owner == owner, "You are not the owner/admin of this scope.");
+  execaccounts_table _execaccounts(get_self(), get_self().value);
+  auto by_acc = _execaccounts.get_index<"byacc"_n>();
 
+  auto exec_perm_itr = by_acc.find(exec_permission.actor.value);
 
-  _privscopes.modify( priv_itr, same_payer, [&]( auto& n) {
-    n.required_exec_permissions = required_exec_permissions;
+  if(exec_perm_itr != by_acc.end() ){//already in table
+
+    if(remove){
+      check(exec_perm_itr->owner == owner, "You are not the owner of this executer account.");
+      by_acc.erase(exec_perm_itr);
+      return;
+    }
+    check(false, "Exec account already registered.");
+  }
+  //not in table
+  check(remove == false, "Exec account not registered.");
+
+  check(get_settings().required_exec_permission[0].actor != exec_permission.actor, "Can't own the default execution account.");
+
+  bool test = is_master_authorized_to_use_slave(permission_level(get_self(), name("active")), exec_permission );
+  check(test, get_self().to_string()+"@active"+" doesn't have permission to use "+exec_permission.actor.to_string()+"@"+exec_permission.permission.to_string() );
+  
+  _execaccounts.emplace(owner, [&](auto& n) {
+      n.id = _execaccounts.available_primary_key();
+      n.owner = owner;
+      n.exec_permission = exec_permission;
   });
 
-
-  //check(test > 0, get_self().to_string()+"@active"+" doesn't have permission to use "+required_exec_permissions[0].actor.to_string()+"@"+required_exec_permissions[0].permission.to_string() );
-
 }
+
 
 ACTION croneoscore::setscopeuser (name owner, name scope, name user, bool remove){
   require_auth(owner);
