@@ -91,13 +91,13 @@ void croneoscore::add_reward( const name& miner,  asset value, const settings& s
     //*(uint64_t*)&value.symbol = (value.symbol.raw() & ~0xFF) | (value.symbol.raw() & 0xFF) +1;
     uint8_t p = (value.symbol.raw() & 0xFF) +1;
     value.symbol = symbol(value.symbol.code(), p );
-    value.amount = (value.amount*10)*setting.reward_fee_perc/100;
+    int64_t adjusted_amount = value.amount*10;
+    value.amount = adjusted_amount*setting.reward_fee_perc/100;
 
+    //pay miner
     rewards_table _rewards( get_self(), miner.value);
     auto itr = _rewards.find( value.symbol.code().raw() );
-
     if( itr == _rewards.end() ) {
-
         _rewards.emplace( miner, [&]( auto& a){
             a.adj_p_balance = value;
         });
@@ -105,6 +105,24 @@ void croneoscore::add_reward( const name& miner,  asset value, const settings& s
     else {
         _rewards.modify( itr, same_payer, [&]( auto& a) {
             a.adj_p_balance += value;
+        });
+    }
+    //pay system
+    if(setting.reward_fee_perc == 100){
+        //don't pay system
+        return;
+    }
+    asset system_reward = asset(adjusted_amount, value.symbol) - value;
+    rewards_table _rewards2( get_self(), get_self().value);
+    itr = _rewards2.find( value.symbol.code().raw() );
+    if( itr == _rewards2.end() ) {
+        _rewards2.emplace( get_self(), [&]( auto& a){
+            a.adj_p_balance = system_reward;
+        });
+    } 
+    else {
+        _rewards2.modify( itr, same_payer, [&]( auto& a) {
+            a.adj_p_balance += system_reward;
         });
     }
 }

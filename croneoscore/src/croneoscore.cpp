@@ -1,6 +1,9 @@
 #include <croneoscore.hpp>
 #include <functions.cpp>
+
+#ifdef _DEV_
 #include <dev.cpp>
+#endif
 
 ACTION croneoscore::setsettings(
   uint8_t max_allowed_actions, 
@@ -34,7 +37,19 @@ ACTION croneoscore::schedule(
     string description,
     vector<oracle_src> oracle_srcs
 ){
+
   require_auth(owner);
+
+  trusteddapps_table _trusteddapps(get_self(), get_self().value);
+  auto itr = _trusteddapps.find(owner.value);
+  if(itr != _trusteddapps.end() && itr->approved != 0 ){
+    //trusted contract
+
+  }
+  else{
+    //untrusted contract
+
+  }
 
   scope = scope == name(0) ? get_self() : scope;
   if(scope != get_self() ){
@@ -81,7 +96,9 @@ ACTION croneoscore::schedule(
   auto by_acc = _execaccounts.get_index<"byacc"_n>();
 
   for(action act : actions){
+  
     //also allow scheduling actions from other contracts???
+    //allow scheduling from foraign contracts->todo thinking...
     check(act.account == owner, "Scheduled action must be from owner contract "+owner.to_string() );
 
     bool has_required_auth = false;
@@ -439,6 +456,58 @@ void croneoscore::top_up_balance(name from, name to, asset quantity, string memo
   }
 
   add_balance( receiving_owner, quantity);
+}
+
+ACTION croneoscore::approvedapp(name contract, bool approved){
+  require_auth(get_self());
+  trusteddapps_table _trusteddapps(get_self(), get_self().value);
+  auto itr = _trusteddapps.find(contract.value);
+  check(itr != _trusteddapps.end(), "Contract "+contract.to_string()+" doesn't exists in the table." );
+  int a = approved ? 1 : 0;
+  check(itr->approved != a, "Contract already in approved/unapproved state. ");
+  _trusteddapps.modify( itr, same_payer, [&]( auto& n) {
+    n.approved = a;
+  });
+
+}
+
+ACTION croneoscore::regdapp(name contract, string description, string url, string logo){
+  name ram_payer = get_self();
+  if(!has_auth(get_self()) ){
+    require_auth(contract);
+    ram_payer = contract;
+  }
+  trusteddapps_table _trusteddapps(get_self(), get_self().value);
+  auto itr = _trusteddapps.find(contract.value);
+
+  if(itr == _trusteddapps.end() ){
+    //add new
+    _trusteddapps.emplace(ram_payer, [&](auto& n) {
+      n.contract = contract;
+      n.description = description;
+      n.url = url;
+      n.logo = logo;
+    });
+  }
+  else{
+    //update
+    _trusteddapps.modify( itr, ram_payer, [&]( auto& n) {
+      n.description = description;
+      n.url = url;
+      n.logo = logo;
+    });
+  
+  }
+}
+
+ACTION croneoscore::unregdapp(name contract){
+  if(!has_auth(get_self()) ){
+    require_auth(contract);
+  }
+  trusteddapps_table _trusteddapps(get_self(), get_self().value);
+  auto itr = _trusteddapps.find(contract.value);
+  check(itr != _trusteddapps.end(), "Contract "+contract.to_string()+" doesn't exists in the table." );
+  _trusteddapps.erase(itr);
 }
 
 

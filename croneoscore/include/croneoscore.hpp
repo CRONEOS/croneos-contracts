@@ -9,6 +9,8 @@
 #include <eosio/time.hpp>
 #include <eosio/permission.hpp>
 
+//comment out to enable dev actions
+#define _DEV_ 
 
 using namespace std;
 using namespace eosio;
@@ -51,19 +53,24 @@ CONTRACT croneoscore : public contract {
     ACTION withdraw( name miner, asset amount );
     ACTION refund(name owner, asset amount);
 
-    ACTION setexecacc (name owner, permission_level exec_permission, bool remove);
+    //approve or unapprove a trusted dapp contract
+    ACTION approvedapp(name contract, bool approved);
+    ACTION regdapp(name contract, string description, string url, string logo);
+    ACTION unregdapp(name contract);
 
+    ACTION setexecacc (name owner, permission_level exec_permission, bool remove);
     ACTION setprivscope (name actor, name scope_owner, name scope, bool remove);
     ACTION setscopemeta (name owner, name scope, scope_meta meta);
     ACTION setscopeuser (name owner, name scope, name user, bool remove);
     
-
     ACTION addgastoken(extended_asset gas_token);
     ACTION rmgastoken(asset gas_token);
 
+#ifdef _DEV_
     ACTION delrewards(name scope);
     ACTION delsettings();
     ACTION clear();
+#endif
     
     //notification handlers
     [[eosio::on_notify("*::transfer")]]
@@ -85,7 +92,8 @@ CONTRACT croneoscore : public contract {
       string description;
       uint8_t max_exec_count=1;
       vector<oracle_src> oracle_srcs;
-
+      
+      //uint8_t job_type = 0; //0:normal, 1: repeating
       
       uint64_t primary_key() const { return id; }
       uint64_t by_owner() const { return owner.value; }
@@ -172,6 +180,21 @@ CONTRACT croneoscore : public contract {
   > execaccounts_table;
   //************************
 
+  //************************
+  TABLE trusteddapps {
+    name contract;
+    string description;
+    string url;
+    string logo;
+    uint64_t approved = 0;
+
+    uint64_t primary_key() const { return contract.value; }
+    uint64_t by_approved() const { return approved; }
+  };
+  typedef multi_index<"trusteddapps"_n, trusteddapps,
+    indexed_by<"byapproved"_n, const_mem_fun<trusteddapps, uint64_t, &trusteddapps::by_approved>>
+  > trusteddapps_table;
+  //************************
 
   //************************
   TABLE privscopes {
@@ -215,7 +238,6 @@ CONTRACT croneoscore : public contract {
   bool has_scope_write_access(const name&  user, const name& scope);
 
   bool is_master_authorized_to_use_slave(const permission_level& master, const permission_level& slave){
-  
     vector<permission_level> masterperm = { master };
     auto packed_master = pack(masterperm);
     auto test = eosio::check_permission_authorization(
@@ -232,7 +254,6 @@ CONTRACT croneoscore : public contract {
 
   template <typename T>
   void cleanTable(name code, uint64_t account, const uint32_t batchSize){
-
     T db(code, account);
     uint32_t counter = 0;
     auto itr = db.begin();
