@@ -127,6 +127,7 @@ void croneoscore::add_reward( const name& miner,  asset value, const settings& s
     }
 }
 
+
 bool croneoscore::is_valid_fee_token(name tokencontract, asset quantity){
 
     gastokens_table _gastokens(get_self(), get_self().value);

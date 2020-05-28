@@ -42,3 +42,12 @@ summary: 'Withdraw miner rewards.'
 icon: https://croneos.io/statics/app-logo-128x128.png#d39fc7767099890429d926339b4d13af66b77db9b443366002227bad9bb1896e
 ---
 {{miner}} agrees to receive {{amount}} via an inline transfer initiated by the contract. The {{asset_to_symbol_code amount}} will be substracted from {{miner}}'s miner rewards.
+
+<h1 class="contract">movefund</h1>
+---
+spec_version: "0.2.0"
+title: Withdraw system balance
+summary: 'Move system balance to an other account.'
+icon: https://croneos.io/statics/app-logo-128x128.png#d39fc7767099890429d926339b4d13af66b77db9b443366002227bad9bb1896e
+---
+{{receiver}} will receive {{amount}} via an inline transfer initiated by the contract. The {{asset_to_symbol_code amount}} will be substracted from the system balance.
