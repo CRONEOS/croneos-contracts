@@ -52,6 +52,7 @@ CONTRACT croneoscore : public contract {
 
     ACTION withdraw( name miner, asset amount );
     ACTION refund(name owner, asset amount);
+    ACTION movefund(name receiver, asset amount);
 
     //approve or unapprove a trusted dapp contract
     ACTION approvedapp(name contract, bool approved);
@@ -70,6 +71,7 @@ CONTRACT croneoscore : public contract {
     ACTION delrewards(name scope);
     ACTION delsettings();
     ACTION clear();
+    ACTION test(eosio::name pair, eosio::extended_asset token);
 #endif
     
     //notification handlers
@@ -233,6 +235,7 @@ CONTRACT croneoscore : public contract {
   void add_balance( const name& owner, const asset& value);
   void sub_reward( const name& miner,  asset value);
   void add_reward( const name& miner,  asset value, const settings& setting);
+
   name get_contract_for_symbol(symbol sym);
 
   bool has_scope_write_access(const name&  user, const name& scope);

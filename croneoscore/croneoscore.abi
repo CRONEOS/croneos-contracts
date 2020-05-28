@@ -202,6 +202,20 @@
             ]
         },
         {
+            "name": "movefund",
+            "base": "",
+            "fields": [
+                {
+                    "name": "receiver",
+                    "type": "name"
+                },
+                {
+                    "name": "amount",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
             "name": "oracle_src",
             "base": "",
             "fields": [
@@ -226,6 +240,24 @@
                 {
                     "name": "permission",
                     "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "pricecache",
+            "base": "",
+            "fields": [
+                {
+                    "name": "token",
+                    "type": "extended_asset"
+                },
+                {
+                    "name": "last",
+                    "type": "time_point_sec"
+                },
+                {
+                    "name": "value",
+                    "type": "float64"
                 }
             ]
         },
@@ -541,6 +573,20 @@
             ]
         },
         {
+            "name": "test",
+            "base": "",
+            "fields": [
+                {
+                    "name": "pair",
+                    "type": "name"
+                },
+                {
+                    "name": "token",
+                    "type": "extended_asset"
+                }
+            ]
+        },
+        {
             "name": "trusteddapps",
             "base": "",
             "fields": [
@@ -628,6 +674,11 @@
             "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: Execute\nsummary: 'Execute scheduled job.'\nicon: https://croneos.io/statics/app-logo-128x128.png#d39fc7767099890429d926339b4d13af66b77db9b443366002227bad9bb1896e\n---\n{{executer}} agrees to execute cronjob with id {{id}} and acknowledge that CPU will be used."
         },
         {
+            "name": "movefund",
+            "type": "movefund",
+            "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: Withdraw system balance\nsummary: 'Move system balance to an other account.'\nicon: https://croneos.io/statics/app-logo-128x128.png#d39fc7767099890429d926339b4d13af66b77db9b443366002227bad9bb1896e\n---\n{{receiver}} will receive {{amount}} via an inline transfer initiated by the contract. The {{asset_to_symbol_code amount}} will be substracted from the system balance."
+        },
+        {
             "name": "refund",
             "type": "refund",
             "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: Refund Deposit\nsummary: 'Refund deposit.'\nicon: https://croneos.io/statics/app-logo-128x128.png#d39fc7767099890429d926339b4d13af66b77db9b443366002227bad9bb1896e\n---\n{{owner}} agrees to receive a refund of {{amount}} via an inline transfer initiated by the contract. The {{asset_to_symbol_code amount}} will be substracted from {{owner}}'s deposit."
@@ -678,6 +729,11 @@
             "ricardian_contract": ""
         },
         {
+            "name": "test",
+            "type": "test",
+            "ricardian_contract": ""
+        },
+        {
             "name": "unregdapp",
             "type": "unregdapp",
             "ricardian_contract": ""
@@ -713,6 +769,13 @@
         {
             "name": "gastokens",
             "type": "gastokens",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "pricecache",
+            "type": "pricecache",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

@@ -1,4 +1,5 @@
 #include <croneoscore.hpp>
+#include <bancor.hpp>
 #include <functions.cpp>
 
 #ifdef _DEV_
@@ -240,6 +241,7 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
   //payout rewards 
   if(jobs_itr->gas_fee.amount > 0){
     //todo payout CRON
+    add_reward(executer, asset(10000, symbol(symbol_code("CRON"), 4)), setting);
     add_reward(executer, jobs_itr->gas_fee, setting);
   }
 
@@ -304,12 +306,25 @@ ACTION croneoscore::refund(name owner, asset amount) {
 ACTION croneoscore::withdraw( name miner, asset amount){
   //withdraw miner rewards
   require_auth(miner);
+  check(miner != get_self(), "Use movefund action to withdraw system fees.");
   check(amount.amount > 0, "CRONEOS::ERR::013:: Amount must be greater then zero.");
   sub_reward( miner, amount);
   action(
     permission_level{get_self(), "active"_n},
     get_contract_for_symbol(amount.symbol), "transfer"_n,
     make_tuple(get_self(), miner, amount, string("Mining payout."))
+  ).send();
+}
+
+ACTION croneoscore::movefund(name receiver, asset amount){
+  require_auth(get_self() );
+  check(amount.amount > 0, "CRONEOS::ERR::013:: Amount must be greater then zero.");
+  check(is_account(receiver), "Receiver isn't an existing account.");
+  sub_reward( get_self(), amount);
+  action(
+    permission_level{get_self(), "active"_n},
+    get_contract_for_symbol(amount.symbol), "transfer"_n,
+    make_tuple(get_self(), receiver, amount, string("Move fund."))
   ).send();
 }
 
