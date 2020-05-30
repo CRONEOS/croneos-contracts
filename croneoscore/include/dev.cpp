@@ -15,9 +15,3 @@ ACTION croneoscore::delsettings(){
   _settings.remove();
 
 }
-
-ACTION croneoscore::test(eosio::name pair, eosio::extended_asset token){
-  require_auth(get_self());
-  bancor::get_eos_value_of(pair, token);
-
-}

@@ -244,24 +244,6 @@
             ]
         },
         {
-            "name": "pricecache",
-            "base": "",
-            "fields": [
-                {
-                    "name": "token",
-                    "type": "extended_asset"
-                },
-                {
-                    "name": "last",
-                    "type": "time_point_sec"
-                },
-                {
-                    "name": "value",
-                    "type": "float64"
-                }
-            ]
-        },
-        {
             "name": "privscopes",
             "base": "",
             "fields": [
@@ -573,20 +555,6 @@
             ]
         },
         {
-            "name": "test",
-            "base": "",
-            "fields": [
-                {
-                    "name": "pair",
-                    "type": "name"
-                },
-                {
-                    "name": "token",
-                    "type": "extended_asset"
-                }
-            ]
-        },
-        {
             "name": "trusteddapps",
             "base": "",
             "fields": [
@@ -729,11 +697,6 @@
             "ricardian_contract": ""
         },
         {
-            "name": "test",
-            "type": "test",
-            "ricardian_contract": ""
-        },
-        {
             "name": "unregdapp",
             "type": "unregdapp",
             "ricardian_contract": ""
@@ -769,13 +732,6 @@
         {
             "name": "gastokens",
             "type": "gastokens",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "pricecache",
-            "type": "pricecache",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

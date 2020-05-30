@@ -1,5 +1,5 @@
 #include <croneoscore.hpp>
-#include <bancor.hpp>
+//#include <bancor.hpp>
 #include <functions.cpp>
 
 #ifdef _DEV_
