@@ -244,8 +244,8 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
     //payout CRON reward
     if(is_account(setting.token_contract) &&  setting.token_contract != name(0) ){
         //t = 100-((now-due_date)/(expiration-due_date)*100)
-        double t = 100-((now.sec_since_epoch() - jobs_itr->due_date.sec_since_epoch() )/(jobs_itr->expiration.sec_since_epoch() - jobs_itr->due_date.sec_since_epoch())*100);
-        asset dummy_stake = asset(100000000000, symbol(symbol_code("CRON"), 4));
+        double t = ((now.sec_since_epoch() - jobs_itr->due_date.sec_since_epoch() )/(jobs_itr->expiration.sec_since_epoch() - jobs_itr->due_date.sec_since_epoch())*100);
+        asset dummy_stake = asset(50000000000, symbol(symbol_code("CRON"), 4));
         pair<double,double> reward = cron_mining::calc_cron_reward(jobs_itr->gas_fee, t, dummy_stake);
 
         asset miner_reward = eosio::asset(reward.first*pow(10,4), eosio::symbol(eosio::symbol_code("CRON"), 4) );
