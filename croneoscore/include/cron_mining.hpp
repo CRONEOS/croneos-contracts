@@ -89,7 +89,7 @@ namespace cron_mining{
         double staked = cron_stake.amount/pow(10, cron_stake.symbol.precision() );
         
         double decay_rate = 0.04;
-        double inflation_pct = 0.002;
+        double inflation_pct = 0.0007;
         double t_component = exp(-t_mining*decay_rate);
 
         //staked*inflation_ptc*job_gas_fee_eos*Math.exp(-t*decay_rate );
