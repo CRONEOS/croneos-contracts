@@ -202,6 +202,28 @@
             ]
         },
         {
+            "name": "gasvalues",
+            "base": "",
+            "fields": [
+                {
+                    "name": "symbol",
+                    "type": "symbol_code"
+                },
+                {
+                    "name": "last",
+                    "type": "time_point_sec"
+                },
+                {
+                    "name": "value",
+                    "type": "float64"
+                },
+                {
+                    "name": "smart_symbol",
+                    "type": "symbol_code"
+                }
+            ]
+        },
+        {
             "name": "movefund",
             "base": "",
             "fields": [
@@ -411,6 +433,28 @@
                 {
                     "name": "exec_permission",
                     "type": "permission_level"
+                },
+                {
+                    "name": "remove",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "setgasvalue",
+            "base": "",
+            "fields": [
+                {
+                    "name": "symbol",
+                    "type": "symbol_code"
+                },
+                {
+                    "name": "smart_symbol",
+                    "type": "symbol_code"
+                },
+                {
+                    "name": "init_value",
+                    "type": "float64"
                 },
                 {
                     "name": "remove",
@@ -677,6 +721,11 @@
             "ricardian_contract": ""
         },
         {
+            "name": "setgasvalue",
+            "type": "setgasvalue",
+            "ricardian_contract": ""
+        },
+        {
             "name": "setprivscope",
             "type": "setprivscope",
             "ricardian_contract": ""
@@ -732,6 +781,13 @@
         {
             "name": "gastokens",
             "type": "gastokens",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "gasvalues",
+            "type": "gasvalues",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

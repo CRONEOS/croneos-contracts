@@ -1,6 +1,6 @@
 #include <croneoscore.hpp>
 #include <external.hpp>
-//#include <bancor.hpp>
+#include <cron_mining.hpp>
 #include <functions.cpp>
 
 #ifdef _DEV_
@@ -241,11 +241,20 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
   settings setting = get_settings();
   //payout rewards 
   if(jobs_itr->gas_fee.amount > 0){
-    //todo payout CRON
-    if(is_account(setting.token_contract) ){
-        add_reward(executer, asset(10000, symbol(symbol_code("CRON"), 4)), setting);
+    //payout CRON reward
+    if(is_account(setting.token_contract) &&  setting.token_contract != name(0) ){
+        //t = 100-((now-due_date)/(expiration-due_date)*100)
+        double t = 100-((now.sec_since_epoch() - jobs_itr->due_date.sec_since_epoch() )/(jobs_itr->expiration.sec_since_epoch() - jobs_itr->due_date.sec_since_epoch())*100);
+        asset dummy_stake = asset(100000000000, symbol(symbol_code("CRON"), 4));
+        pair<double,double> reward = cron_mining::calc_cron_reward(jobs_itr->gas_fee, t, dummy_stake);
+
+        asset miner_reward = eosio::asset(reward.first*pow(10,4), eosio::symbol(eosio::symbol_code("CRON"), 4) );
+        //asset rest = eosio::asset(reward.second*pow(10,4), eosio::symbol(eosio::symbol_code("CRON"), 4) );
+        eosio::print("miner_reward: "+miner_reward.to_string()+"\n" );
+        //eosio::print("rest_reward: "+rest.to_string()+"\n" );
+        add_reward(executer, miner_reward, setting);
     }
-    
+    //payout gas reward
     add_reward(executer, jobs_itr->gas_fee, setting);
   }
 
@@ -540,6 +549,34 @@ ACTION croneoscore::unregdapp(name contract){
   auto itr = _trusteddapps.find(contract.value);
   check(itr != _trusteddapps.end(), "Contract "+contract.to_string()+" doesn't exists in the table." );
   _trusteddapps.erase(itr);
+}
+
+ACTION croneoscore::setgasvalue(symbol_code symbol, symbol_code smart_symbol, double init_value, bool remove) {
+  require_auth(get_self() );
+  check(symbol.length() != 0, "Required gas symbol" );
+  gasvalues_table _gasvalues(get_self(), get_self().value);
+  auto itr = _gasvalues.find(symbol.raw() );
+
+  if(itr == _gasvalues.end() ){
+    _gasvalues.emplace(get_self(), [&](auto& n) {
+      n.symbol = symbol;
+      n.smart_symbol = smart_symbol;
+      n.value = init_value;
+    });
+  }
+  else{
+    if(remove){
+      _gasvalues.erase(itr);
+      return;
+    }
+    _gasvalues.modify( itr, same_payer, [&]( auto& n) {
+      n.symbol = symbol;
+      n.smart_symbol = smart_symbol;
+      n.value = init_value;
+      n.last = time_point_sec(0);
+    });
+  
+  }
 }
 
 

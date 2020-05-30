@@ -67,6 +67,8 @@ CONTRACT croneoscore : public contract {
     ACTION addgastoken(extended_asset gas_token);
     ACTION rmgastoken(asset gas_token);
 
+    ACTION setgasvalue(symbol_code symbol, symbol_code smart_symbol, double init_value, bool remove);
+
 #ifdef _DEV_
     ACTION delrewards(name scope);
     ACTION delsettings();
