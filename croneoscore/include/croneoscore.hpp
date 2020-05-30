@@ -71,7 +71,6 @@ CONTRACT croneoscore : public contract {
     ACTION delrewards(name scope);
     ACTION delsettings();
     ACTION clear();
-    ACTION test(eosio::name pair, eosio::extended_asset token);
 #endif
     
     //notification handlers
