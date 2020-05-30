@@ -1,4 +1,5 @@
 #include <croneoscore.hpp>
+#include <external.hpp>
 //#include <bancor.hpp>
 #include <functions.cpp>
 
@@ -241,7 +242,10 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
   //payout rewards 
   if(jobs_itr->gas_fee.amount > 0){
     //todo payout CRON
-    add_reward(executer, asset(10000, symbol(symbol_code("CRON"), 4)), setting);
+    if(is_account(setting.token_contract) ){
+        add_reward(executer, asset(10000, symbol(symbol_code("CRON"), 4)), setting);
+    }
+    
     add_reward(executer, jobs_itr->gas_fee, setting);
   }
 
@@ -309,11 +313,24 @@ ACTION croneoscore::withdraw( name miner, asset amount){
   check(miner != get_self(), "Use movefund action to withdraw system fees.");
   check(amount.amount > 0, "CRONEOS::ERR::013:: Amount must be greater then zero.");
   sub_reward( miner, amount);
-  action(
-    permission_level{get_self(), "active"_n},
-    get_contract_for_symbol(amount.symbol), "transfer"_n,
-    make_tuple(get_self(), miner, amount, string("Mining payout."))
-  ).send();
+  if(amount.symbol.code() == symbol_code("CRON") ){
+    check(is_account(get_settings().token_contract), "CRON Token contract not valid" );
+    tokenstats_table _cronstats(get_settings().token_contract, symbol_code("CRON").raw() );
+    name issuer = _cronstats.get(symbol_code("CRON").raw()).issuer;
+    action(
+      permission_level{issuer, "active"_n},
+      get_settings().token_contract, "issue"_n,
+      make_tuple( miner, amount, string("Issue CRON for miner."))
+    ).send();
+  }
+  else{
+    action(
+      permission_level{get_self(), "active"_n},
+      get_contract_for_symbol(amount.symbol), "transfer"_n,
+      make_tuple(get_self(), miner, amount, string("Mining payout."))
+    ).send();
+  }
+
 }
 
 ACTION croneoscore::movefund(name receiver, asset amount){
