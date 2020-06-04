@@ -24,6 +24,81 @@ ACTION croneoscore::setsettings(
     }, get_self());
 }
 
+/////////////////////////////////////////////////////////////////////////////
+ACTION croneoscore::qschedule(
+    name owner,
+    uint64_t queue_id,
+    name tick_action_name, //tick
+    uint32_t delay_sec, 
+    uint32_t expiration_sec, 
+    asset gas_fee,
+    string description,
+    uint8_t repeat
+){
+
+  require_auth(owner);
+
+  trusteddapps_table _trusteddapps(get_self(), get_self().value);
+  auto itr = _trusteddapps.find(owner.value);
+  if(itr != _trusteddapps.end() && itr->approved != 0 ){
+    //trusted contract
+
+  }
+  else{
+    //untrusted contract
+
+  }
+
+  name scope = get_self();
+
+  //validate and handle gas_fee
+  check(is_valid_fee_symbol(gas_fee.symbol), "CRONEOS::ERR::001:: Symbol not allowed for paying gas.");
+  check(gas_fee.amount >= 0, "CRONEOS::ERR::002:: gas fee can't be negative.");
+  check(repeat != 0 && repeat <= 50, "CRONEOS::ERR:: Out of repeat bound 1 - 50.");
+  if(gas_fee.amount > 0){
+    sub_balance(owner, gas_fee*repeat); 
+  }
+  else{
+    //no gas payed, restrict repeat to 1
+    check(repeat == 1, "Repeat count must be 1 for jobs without gas fee.");
+  }
+
+  time_point_sec now = time_point_sec(current_time_point());
+  time_point_sec exec_date =  time_point_sec(now.sec_since_epoch() + delay_sec);
+  time_point_sec expiration_date = time_point_sec(exec_date.sec_since_epoch() + expiration_sec);
+
+  check(exec_date >= now, "CRONEOS::ERR::003:: Execution date can't be earlier then current time.");
+  check(expiration_date > exec_date, "CRONEOS::ERR::004:: The expiration date must be later then the execution date.");
+  ////////////end time stuff////////////
+  settings setting = get_settings();
+
+
+  cronjobs_table _cronjobs(get_self(), scope.value);
+  tick_action_name = tick_action_name != name(0) ? tick_action_name : name("tick");
+
+  vector<action> actions= {action(setting.required_exec_permission, owner, tick_action_name, make_tuple())};
+  
+  for (int i = 0; i < repeat; ++i) {
+    //print(i);
+    _cronjobs.emplace(owner, [&](auto& n) {
+      n.id = get_next_primary_key();
+      n.owner = owner;
+      n.tag = name(queue_id+i);
+      n.actions = actions;
+      n.due_date = exec_date;
+      n.expiration = expiration_date; 
+      n.submitted = now;
+      n.gas_fee = gas_fee;// can be zero
+      n.description = description;//optional
+
+    });
+  }
+
+
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 
 ACTION croneoscore::schedule(
     name owner,

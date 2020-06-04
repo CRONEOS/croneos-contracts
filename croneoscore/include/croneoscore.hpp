@@ -29,6 +29,17 @@ CONTRACT croneoscore : public contract {
       string logo;
     };
 
+    ACTION qschedule(
+        name owner,
+        uint64_t queue_id,
+        name tick_action_name, //tick
+        uint32_t delay_sec, 
+        uint32_t expiration_sec, 
+        asset gas_fee,
+        string description,
+        uint8_t repeat
+    );
+
     ACTION schedule(
         name owner,
         name scope, 
