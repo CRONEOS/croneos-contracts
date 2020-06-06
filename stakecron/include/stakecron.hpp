@@ -9,21 +9,24 @@ using namespace eosio;
 CONTRACT stakecron : public contract {
   public:
     using contract::contract;
-    ACTION open(name staker);
+    ACTION open(name staker, name ram_payer);
     ACTION unstake(name staker, asset amount);
     ACTION withdraw(name staker, uint64_t id);
-    
-    ACTION clear();
+    ACTION close(name staker);
 
     [[eosio::on_notify("*::transfer")]]
     void on_transfer(name from, name to, asset quantity, string memo);
 
-  private:
     TABLE settings {
       extended_asset stake_token;
       uint64_t release_sec = 60*60*24*3;
     };
     typedef eosio::singleton<"settings"_n, settings> settings_table;
+
+    ACTION setsettings(settings new_settings);
+
+  private:
+
 
     TABLE stakes {
       name    staker;
