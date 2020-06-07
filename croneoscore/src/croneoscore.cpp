@@ -318,11 +318,12 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
   if(jobs_itr->gas_fee.amount > 0){
     //payout CRON reward
     if(is_account(setting.token_contract) &&  setting.token_contract != name(0) ){
-        //t = (now-due_date)/(expiration-due_date)*100
         double t = (double)(now.sec_since_epoch() - jobs_itr->due_date.sec_since_epoch() )/(jobs_itr->expiration.sec_since_epoch() - jobs_itr->due_date.sec_since_epoch())*100;
+        /*
         eosio::print("now: "+to_string(now.sec_since_epoch() )+"\n" );
         eosio::print("due_date: "+to_string(jobs_itr->due_date.sec_since_epoch() )+"\n" );
         eosio::print("expiration: "+to_string(jobs_itr->expiration.sec_since_epoch() )+"\n\n" );
+        */
 
         asset dummy_stake = asset(50000000000, symbol(symbol_code("CRON"), 4));
         pair<double,double> reward = cron_mining::calc_cron_reward(jobs_itr->gas_fee, t, dummy_stake);
