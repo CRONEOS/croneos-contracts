@@ -319,7 +319,7 @@ ACTION croneoscore::exec(name executer, uint64_t id, name scope, std::vector<cha
     //payout CRON reward
     if(is_account(setting.token_contract) &&  setting.token_contract != name(0) ){
         //t = (now-due_date)/(expiration-due_date)*100
-        double t = (now.sec_since_epoch() - jobs_itr->due_date.sec_since_epoch() )/(jobs_itr->expiration.sec_since_epoch() - jobs_itr->due_date.sec_since_epoch())*100;
+        double t = (double)(now.sec_since_epoch() - jobs_itr->due_date.sec_since_epoch() )/(jobs_itr->expiration.sec_since_epoch() - jobs_itr->due_date.sec_since_epoch())*100;
         eosio::print("now: "+to_string(now.sec_since_epoch() )+"\n" );
         eosio::print("due_date: "+to_string(jobs_itr->due_date.sec_since_epoch() )+"\n" );
         eosio::print("expiration: "+to_string(jobs_itr->expiration.sec_since_epoch() )+"\n\n" );
