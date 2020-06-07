@@ -98,6 +98,7 @@ namespace cron_mining{
         double rest_share = base - miner_share;
    
         eosio::print("cron stake: "+cron_stake.to_string()+"\n" );
+        eosio::print("t: "+to_string(t_mining)+"\n" );
         eosio::print("t_component: "+to_string(t_component)+"\n" );
         eosio::print("gas_in_eos: "+to_string(gas_in_eos)+"\n" );
         eosio::print("base: "+to_string(base)+"\n" );
