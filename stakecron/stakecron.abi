@@ -10,6 +10,10 @@
                 {
                     "name": "staker",
                     "type": "name"
+                },
+                {
+                    "name": "staketype",
+                    "type": "name"
                 }
             ]
         },
@@ -24,23 +28,31 @@
                 {
                     "name": "ram_payer",
                     "type": "name"
+                },
+                {
+                    "name": "staketype",
+                    "type": "name"
                 }
             ]
         },
         {
-            "name": "setsettings",
+            "name": "rmstaketype",
             "base": "",
             "fields": [
                 {
-                    "name": "new_settings",
-                    "type": "settings"
+                    "name": "staketype",
+                    "type": "name"
                 }
             ]
         },
         {
-            "name": "settings",
+            "name": "setstaketype",
             "base": "",
             "fields": [
+                {
+                    "name": "staketype",
+                    "type": "name"
+                },
                 {
                     "name": "stake_token",
                     "type": "extended_asset"
@@ -48,6 +60,10 @@
                 {
                     "name": "release_sec",
                     "type": "uint64"
+                },
+                {
+                    "name": "enable",
+                    "type": "bool"
                 }
             ]
         },
@@ -66,6 +82,28 @@
             ]
         },
         {
+            "name": "staketypes",
+            "base": "",
+            "fields": [
+                {
+                    "name": "staketype",
+                    "type": "name"
+                },
+                {
+                    "name": "stake_token",
+                    "type": "extended_asset"
+                },
+                {
+                    "name": "release_sec",
+                    "type": "uint64"
+                },
+                {
+                    "name": "enable",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
             "name": "unstake",
             "base": "",
             "fields": [
@@ -76,6 +114,10 @@
                 {
                     "name": "amount",
                     "type": "asset"
+                },
+                {
+                    "name": "staketype",
+                    "type": "name"
                 }
             ]
         },
@@ -94,6 +136,10 @@
                 {
                     "name": "amount",
                     "type": "asset"
+                },
+                {
+                    "name": "staketype",
+                    "type": "name"
                 },
                 {
                     "name": "release_date",
@@ -128,8 +174,13 @@
             "ricardian_contract": ""
         },
         {
-            "name": "setsettings",
-            "type": "setsettings",
+            "name": "rmstaketype",
+            "type": "rmstaketype",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "setstaketype",
+            "type": "setstaketype",
             "ricardian_contract": ""
         },
         {
@@ -145,15 +196,15 @@
     ],
     "tables": [
         {
-            "name": "settings",
-            "type": "settings",
+            "name": "stakes",
+            "type": "stakes",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
         },
         {
-            "name": "stakes",
-            "type": "stakes",
+            "name": "staketypes",
+            "type": "staketypes",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
