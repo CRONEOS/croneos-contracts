@@ -3,7 +3,7 @@
   "contract": "croneoscore",
   "include": "",
   "resource": "",
-  "cdt": "v1.6.3",
+  "cdt": "v1.7.0-rc1",
   "output": "",
   "scripts": {
     "build": ""
