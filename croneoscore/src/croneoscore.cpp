@@ -83,7 +83,7 @@ ACTION croneoscore::qschedule(
     _cronjobs.emplace(owner, [&](auto& n) {
       n.id = get_next_primary_key();
       n.owner = owner;
-      n.tag = name(queue_id+i);
+      n.tag = name(queue_id); //name(queue_id+i);
       n.actions = actions;
       n.due_date = exec_date;
       n.expiration = expiration_date; 
@@ -243,6 +243,34 @@ ACTION croneoscore::schedule(
     n.oracle_srcs = oracle_srcs;
   });
 }
+
+ACTION croneoscore::cancelbytag(name owner, name tag, uint8_t size, name scope){
+    require_auth(owner);
+    scope = scope == name(0) ? get_self() : scope;
+    state_table _state(get_self(), get_self().value);
+    auto s = _state.get();
+
+    cronjobs_table _cronjobs(get_self(), scope.value);
+    auto by_owner_and_tag = _cronjobs.get_index<"byownertag"_n>();
+
+    uint128_t composite_id = (uint128_t{owner.value} << 64) | tag.value;
+
+    auto stop_itr = by_owner_and_tag.upper_bound(composite_id);
+    auto itr = by_owner_and_tag.begin();
+    uint8_t counter = 0;
+
+    while (itr != stop_itr && counter++ < size){
+      if(itr->gas_fee.amount > 0){
+        add_balance( itr->owner, itr->gas_fee);//refund gas fee
+      }
+      itr = by_owner_and_tag.erase(itr);
+      s.cancel_count++; 
+    }
+
+    _state.set(s, get_self());
+}
+
+
 
 ACTION croneoscore::cancel(name owner, uint64_t id, name scope){
     require_auth(owner);
