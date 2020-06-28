@@ -256,9 +256,9 @@ ACTION croneoscore::cancelbytag(name owner, name tag, uint8_t size, name scope){
     uint128_t composite_id = (uint128_t{owner.value} << 64) | tag.value;
 
     auto stop_itr = by_owner_and_tag.upper_bound(composite_id);
-    auto itr = by_owner_and_tag.begin();
+    auto itr = by_owner_and_tag.lower_bound(composite_id);
+    
     uint8_t counter = 0;
-
     while (itr != stop_itr && counter++ < size){
       if(itr->gas_fee.amount > 0){
         add_balance( itr->owner, itr->gas_fee);//refund gas fee
