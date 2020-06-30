@@ -54,6 +54,7 @@ CONTRACT croneoscore : public contract {
         string description,
         vector<oracle_src> oracle_srcs
     );
+    ACTION cancelbytag(name owner, name tag, uint8_t size, name scope);
     ACTION cancel(name owner, uint64_t id, name scope);
     ACTION exec(name executer, uint64_t id, name scope, std::vector<char> oracle_response);
 
@@ -113,11 +114,13 @@ CONTRACT croneoscore : public contract {
       uint64_t by_owner() const { return owner.value; }
       uint64_t by_due_date() const { return due_date.sec_since_epoch(); }
       uint128_t by_owner_tag() const { return (uint128_t{owner.value} << 64) | tag.value; }
+      //uint64_t by_expiration() const { return expiration.sec_since_epoch(); }
     };
     typedef multi_index<"cronjobs"_n, cronjobs,
     eosio::indexed_by<"byowner"_n, eosio::const_mem_fun<cronjobs, uint64_t, &cronjobs::by_owner>>,
     eosio::indexed_by<"byduedate"_n, eosio::const_mem_fun<cronjobs, uint64_t, &cronjobs::by_due_date>>,
     indexed_by<"byownertag"_n, const_mem_fun<cronjobs, uint128_t, &cronjobs::by_owner_tag>>
+    //,eosio::indexed_by<"byexpiration"_n, eosio::const_mem_fun<cronjobs, uint64_t, &cronjobs::by_expiration>>
     
     > cronjobs_table;
   //************************
@@ -251,6 +254,8 @@ CONTRACT croneoscore : public contract {
   name get_contract_for_symbol(symbol sym);
 
   bool has_scope_write_access(const name&  user, const name& scope);
+
+  //bool clean_expired(cronjobs_table& idx, uint32_t batch_size);
 
   bool is_master_authorized_to_use_slave(const permission_level& master, const permission_level& slave){
     vector<permission_level> masterperm = { master };
