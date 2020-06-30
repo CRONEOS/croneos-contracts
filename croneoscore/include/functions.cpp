@@ -183,6 +183,35 @@ bool croneoscore::has_scope_write_access(const name& user, const name& scope){
 
 }
 
+/*
+bool croneoscore::clean_expired(cronjobs_table& idx, uint32_t batch_size){
+    time_point_sec now = time_point_sec(current_time_point());
+    auto by_expiration = idx.get_index<"byexpiration"_n>();
+    auto stop_itr = by_expiration.upper_bound(now.sec_since_epoch() );
+    uint32_t counter = 0;
+    auto itr = by_expiration.begin();
+    while (itr != stop_itr && counter++ < batch_size){
+        if(itr->gas_fee.amount > 0){
+            add_balance( itr->owner, itr->gas_fee);//refund gas fee
+        }
+        itr = by_expiration.erase(itr);
+    }
+
+    if(counter > 0){
+        state_table _state(get_self(), get_self().value);
+        auto s = _state.get();
+        s.expired_count += counter;
+        _state.set(s, get_self());
+        return true;
+    }
+    else{
+        return false;
+    }
+
+}
+*/
+
+
 
 
 
