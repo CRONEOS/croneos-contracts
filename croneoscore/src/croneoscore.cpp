@@ -279,9 +279,11 @@ ACTION croneoscore::canceloldest(name owner, uint8_t size, name scope){
     cronjobs_table _cronjobs(get_self(), scope.value);
     auto by_owner = _cronjobs.get_index<"byowner"_n>();
 
-    auto itr = by_owner.begin();
+    auto itr = by_owner.lower_bound(owner.value);
+    auto stop_itr = by_owner.upper_bound(owner.value);
+    
     uint8_t counter = 0;
-    while (itr != by_owner.end() && counter++ < size){
+    while (itr != stop_itr && counter++ < size){
       if(itr->gas_fee.amount > 0){
         add_balance( itr->owner, itr->gas_fee);//refund gas fee
       }
