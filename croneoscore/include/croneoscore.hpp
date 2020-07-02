@@ -55,7 +55,9 @@ CONTRACT croneoscore : public contract {
         vector<oracle_src> oracle_srcs
     );
     ACTION cancelbytag(name owner, name tag, uint8_t size, name scope);
+    ACTION canceloldest(name owner, uint8_t size, name scope);
     ACTION cancel(name owner, uint64_t id, name scope);
+    
     ACTION exec(name executer, uint64_t id, name scope, std::vector<char> oracle_response);
 
     ACTION setsettings(uint8_t max_allowed_actions, vector<permission_level> required_exec_permission, uint8_t reward_fee_perc, asset new_scope_fee, name token_contract);

@@ -270,6 +270,29 @@ ACTION croneoscore::cancelbytag(name owner, name tag, uint8_t size, name scope){
     _state.set(s, get_self());
 }
 
+ACTION croneoscore::canceloldest(name owner, uint8_t size, name scope){
+    require_auth(owner);
+    scope = scope == name(0) ? get_self() : scope;
+    state_table _state(get_self(), get_self().value);
+    auto s = _state.get();
+
+    cronjobs_table _cronjobs(get_self(), scope.value);
+    auto by_owner = _cronjobs.get_index<"byowner"_n>();
+
+    auto itr = by_owner.begin();
+    uint8_t counter = 0;
+    while (itr != by_owner.end() && counter++ < size){
+      if(itr->gas_fee.amount > 0){
+        add_balance( itr->owner, itr->gas_fee);//refund gas fee
+      }
+      itr = by_owner.erase(itr);
+      s.cancel_count++; 
+    }
+
+    _state.set(s, get_self());
+
+}
+
 
 
 ACTION croneoscore::cancel(name owner, uint64_t id, name scope){

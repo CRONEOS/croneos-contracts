@@ -90,6 +90,24 @@
             ]
         },
         {
+            "name": "canceloldest",
+            "base": "",
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "size",
+                    "type": "uint8"
+                },
+                {
+                    "name": "scope",
+                    "type": "name"
+                }
+            ]
+        },
+        {
             "name": "clear",
             "base": "",
             "fields": []
@@ -728,6 +746,11 @@
         {
             "name": "cancelbytag",
             "type": "cancelbytag",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "canceloldest",
+            "type": "canceloldest",
             "ricardian_contract": ""
         },
         {
