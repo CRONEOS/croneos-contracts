@@ -33,7 +33,7 @@ ACTION croneoscore::qschedule(
     uint32_t expiration_sec, 
     asset gas_fee,
     string description,
-    uint8_t repeat
+    uint64_t repeat
 ){
 
   require_auth(owner);
@@ -54,7 +54,7 @@ ACTION croneoscore::qschedule(
   //validate and handle gas_fee
   check(is_valid_fee_symbol(gas_fee.symbol), "CRONEOS::ERR::001:: Symbol not allowed for paying gas.");
   check(gas_fee.amount >= 0, "CRONEOS::ERR::002:: gas fee can't be negative.");
-  check(repeat != 0 && repeat <= 50, "CRONEOS::ERR:: Out of repeat bound 1 - 50.");
+  //check(repeat != 0 && repeat <= 50, "CRONEOS::ERR:: Out of repeat bound 1 - 50.");
   if(gas_fee.amount > 0){
     sub_balance(owner, gas_fee*repeat); 
   }

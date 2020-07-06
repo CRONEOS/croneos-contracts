@@ -10,12 +10,12 @@
 #define _CONTRACT_NAME_ "croneoscore"
 
 //mainnet
-#define _BANCOR_CONTRACT_ "bancorcnvrtr"
-#define _SELF_ "cron.eos"
+//#define _BANCOR_CONTRACT_ "bancorcnvrtr"
+//#define _SELF_ "cron.eos"
 
 //jungle3
-//#define _BANCOR_CONTRACT_ "bancor123451"
-//#define _SELF_ "croncron3333"
+#define _BANCOR_CONTRACT_ "bancor123451"
+#define _SELF_ "croncron3333"
 
 
 struct reserve_t {

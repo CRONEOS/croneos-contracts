@@ -37,7 +37,7 @@ CONTRACT croneoscore : public contract {
         uint32_t expiration_sec, 
         asset gas_fee,
         string description,
-        uint8_t repeat
+        uint64_t repeat
     );
 
     ACTION schedule(
