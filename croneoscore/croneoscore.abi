@@ -357,7 +357,7 @@
                 },
                 {
                     "name": "repeat",
-                    "type": "uint8"
+                    "type": "uint64"
                 }
             ]
         },
